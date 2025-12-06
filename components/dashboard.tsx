@@ -52,11 +52,7 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Image src="/logos/easyloans.svg" alt="EasyLoans" width={140} height={48} priority />
-            <nav className="hidden md:flex gap-4 text-sm text-muted-foreground">
-              <Link href="/products">Products</Link>
-              <Link href="/about">About</Link>
-              <Link href="/docs">Docs</Link>
-            </nav>
+            
           </div>
 
           <div className="flex items-center gap-3">
@@ -68,19 +64,21 @@ export default function Dashboard() {
             </Button>
           </div>
         </div>
-        <div className="bg-gradient-to-r from-sky-50 via-white to-white">
-          <div className="container mx-auto px-4 py-10">
-            <div className="max-w-3xl mx-auto text-center">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900">Find the best loan for you</h1>
-              <p className="mt-3 text-lg text-muted-foreground">AI-powered recommendations and clear comparisons across banks.</p>
+        <div className="bg-gray-50">
+          <div className="container mx-auto px-4 py-12">
+            <div className="max-w-3xl mx-auto">
+              <div className="bg-white shadow-sm rounded-lg p-8">
+                <h1 className="text-3xl md:text-4xl font-semibold text-slate-900">Find the best loan for you</h1>
+                <p className="mt-3 text-base text-slate-600">AI-powered recommendations and clear comparisons across banks.</p>
 
-              <div className="mt-6 flex items-center gap-2 justify-center">
-                <input
-                  aria-label="Search loans"
-                  placeholder="Search by bank, product or rate (e.g. 'personal loan IDFC')"
-                  className="w-full max-w-xl rounded-lg border p-3 shadow-sm"
-                />
-                <Button>Search</Button>
+                <div className="mt-6 flex items-center gap-3">
+                  <input
+                    aria-label="Search loans"
+                    placeholder="Search by bank, product or rate (e.g. 'personal loan IDFC')"
+                    className="w-full max-w-xl rounded-md border border-gray-200 p-3 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                  />
+                  <Button className="bg-indigo-600 text-white hover:bg-indigo-700">Search</Button>
+                </div>
               </div>
             </div>
           </div>

@@ -27,7 +27,7 @@ export function ProductCard({ product }: ProductCardProps) {
               <CardTitle className="text-xl">{product.name}</CardTitle>
               <CardDescription className="text-sm text-muted-foreground line-clamp-2">{product.summary || "No description available"}</CardDescription>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
               <Badge variant="secondary">{product.bank}</Badge>
             </div>
           </div>
