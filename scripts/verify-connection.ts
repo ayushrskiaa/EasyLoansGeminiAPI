@@ -30,7 +30,7 @@ async function verifyConnection() {
 
     // Check if tables exist
     console.log("2. Checking tables...");
-    const tables = await client`
+    const tables = await client<{ table_name: string }[]>`
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public' 
@@ -39,10 +39,10 @@ async function verifyConnection() {
     `;
 
     const expectedTables = ['products', 'users', 'ai_chat_messages'];
-    const existingTables = tables.map((t: { table_name: string }) => t.table_name);
+    const existingTables = tables.map((t) => t.table_name);
 
     console.log(`   Found ${tables.length} table(s):`);
-    tables.forEach((table: { table_name: string }) => {
+    tables.forEach((table) => {
       const isExpected = expectedTables.includes(table.table_name);
       console.log(`   ${isExpected ? '✅' : '⚠️ '} ${table.table_name}`);
     });
@@ -78,14 +78,14 @@ async function verifyConnection() {
 
     // Check enum types
     console.log("\n5. Checking enum types...");
-    const enums = await client`
+    const enums = await client<{ typname: string }[]>`
       SELECT typname 
       FROM pg_type 
       WHERE typtype = 'e' 
       AND typname IN ('loan_type', 'role')
     `;
     
-    const enumNames = enums.map((e: { typname: string }) => e.typname);
+    const enumNames = enums.map((e) => e.typname);
     if (enumNames.includes('loan_type') && enumNames.includes('role')) {
       console.log("   ✅ All enum types exist!");
     } else {

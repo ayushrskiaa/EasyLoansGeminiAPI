@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     const validatedFilters = productFilterSchema.parse(filters);
 
-    let query = db.select().from(products);
+    const baseQuery = db.select().from(products);
 
     const conditions = [];
 
@@ -47,11 +47,12 @@ export async function GET(request: NextRequest) {
       conditions.push(eq(products.type, validatedFilters.type));
     }
 
+    let allProducts;
     if (conditions.length > 0) {
-      query = db.select().from(products).where(and(...conditions));
+      allProducts = await db.select().from(products).where(and(...conditions));
+    } else {
+      allProducts = await baseQuery;
     }
-
-    const allProducts = await query;
 
     return NextResponse.json(allProducts);
   } catch (error) {
