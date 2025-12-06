@@ -1,7 +1,6 @@
 import postgres from "postgres";
 import { config } from "dotenv";
 
-// Load environment variables from .env file
 config();
 
 if (!process.env.DATABASE_URL) {
@@ -16,11 +15,9 @@ async function verifyConnection() {
   let client: ReturnType<typeof postgres> | null = null;
 
   try {
-    // Test connection
     console.log("1. Testing connection...");
     client = postgres(process.env.DATABASE_URL!);
     
-    // Simple query to test connection
     const result = await client`SELECT version() as version, current_database() as database, current_user as user`;
     
     console.log("✅ Connection successful!");
@@ -28,7 +25,6 @@ async function verifyConnection() {
     console.log(`   User: ${result[0].user}`);
     console.log(`   PostgreSQL Version: ${result[0].version.split(' ')[0]} ${result[0].version.split(' ')[1]}\n`);
 
-    // Check if tables exist
     console.log("2. Checking tables...");
     const tables = await client<{ table_name: string }[]>`
       SELECT table_name 
@@ -55,7 +51,6 @@ async function verifyConnection() {
       console.log("\n   ✅ All required tables exist!");
     }
 
-    // Check if products table has data
     if (existingTables.includes('products')) {
       console.log("\n3. Checking products data...");
       const productCount = await client`SELECT COUNT(*) as count FROM products`;
@@ -68,7 +63,6 @@ async function verifyConnection() {
       }
     }
 
-    // Check if users table exists
     if (existingTables.includes('users')) {
       console.log("\n4. Checking users table...");
       const userCount = await client`SELECT COUNT(*) as count FROM users`;
@@ -76,7 +70,6 @@ async function verifyConnection() {
       console.log(`   ✅ Users table ready (${count} user(s))`);
     }
 
-    // Check enum types
     console.log("\n5. Checking enum types...");
     const enums = await client<{ typname: string }[]>`
       SELECT typname 

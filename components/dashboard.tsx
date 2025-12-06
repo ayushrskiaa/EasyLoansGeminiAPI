@@ -19,7 +19,6 @@ export default function Dashboard() {
         const response = await fetch("/api/products");
         const products: Product[] = await response.json();
         
-        // Sort by APR (lower is better) and take top 5
         const sorted = products
           .sort((a, b) => parseFloat(a.rateApr) - parseFloat(b.rateApr))
           .slice(0, 5);

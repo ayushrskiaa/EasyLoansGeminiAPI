@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 
@@ -22,7 +21,6 @@ export default function ProductsPage() {
     minCreditScore: "",
     type: "all",
   });
-  // router not needed here; navigation handled via Link components
 
   useEffect(() => {
     fetchProducts();

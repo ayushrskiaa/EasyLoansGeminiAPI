@@ -27,7 +27,6 @@ interface Message {
   content: string;
 }
 
-// Build a concise product context to send as a system message and to the API
 function buildProductContext(product: Product) {
   return `Product Information:\n- Name: ${product.name}\n- Bank: ${product.bank}\n- Type: ${product.type}\n- APR: ${product.rateApr}%\n- Minimum Income: ₹${product.minIncome}\n- Minimum Credit Score: ${product.minCreditScore}\n- Tenure: ${product.tenureMinMonths}-${product.tenureMaxMonths} months\n- Processing Fee: ${product.processingFeePct}%\n- Prepayment Allowed: ${product.prepaymentAllowed ? "Yes" : "No"}\n- Summary: ${product.summary || "N/A"}`;
 }
@@ -150,7 +149,6 @@ export function ProductChat({ product, open, onOpenChange }: ProductChatProps) {
 
   useEffect(() => {
     if (open) {
-      // Seed the conversation with a system message containing product context
       const sys = { role: "system" as const, content: buildProductContext(product) };
       setMessages([sys]);
       setInput("");
@@ -187,12 +185,10 @@ export function ProductChat({ product, open, onOpenChange }: ProductChatProps) {
           )}
 
           {messages.map((message, index) => {
-            // Skip system messages - they're internal context only
             if (message.role === "system") {
               return null;
             }
 
-            // user message (right)
             if (message.role === "user") {
               return (
                 <div key={index} className="flex justify-end">
@@ -203,7 +199,6 @@ export function ProductChat({ product, open, onOpenChange }: ProductChatProps) {
               );
             }
 
-            // assistant (left) with card UI
             return (
               <div key={index} className="flex justify-start">
                 <div className="max-w-[85%] rounded-xl px-5 py-4 bg-sky-50 border border-sky-100 shadow-sm text-slate-900">

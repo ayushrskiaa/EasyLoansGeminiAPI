@@ -1,7 +1,6 @@
 import { config } from "dotenv";
 import { seedDatabase } from "../lib/db/seed";
 
-// Load environment variables from .env file
 config();
 
 async function main() {

@@ -1,7 +1,6 @@
 import postgres from "postgres";
 import { config } from "dotenv";
 
-// Load environment variables from .env file
 config();
 
 if (!process.env.DATABASE_URL) {
@@ -16,7 +15,6 @@ async function migrate() {
   try {
     console.log("Running migrations...");
 
-    // Create enum types
     await client.unsafe(`
       DO $$ BEGIN
         CREATE TYPE loan_type AS ENUM ('personal', 'education', 'vehicle', 'home', 'credit_line', 'debt_consolidation');
@@ -33,7 +31,6 @@ async function migrate() {
       END $$;
     `);
 
-    // Create products table
     await client.unsafe(`
       CREATE TABLE IF NOT EXISTS products (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -57,7 +54,6 @@ async function migrate() {
       );
     `);
 
-    // Create users table
     await client.unsafe(`
       CREATE TABLE IF NOT EXISTS users (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -68,7 +64,6 @@ async function migrate() {
       );
     `);
 
-    // Create ai_chat_messages table
     await client.unsafe(`
       CREATE TABLE IF NOT EXISTS ai_chat_messages (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = aiAskSchema.parse(body);
 
-    // Fetch product details
     const [product] = await db
       .select()
       .from(products)
@@ -28,7 +27,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    // Initialize Google AI
     const apiKey = process.env.GOOGLE_AI_API_KEY;
     if (!apiKey || apiKey.startsWith("your_")) {
       return NextResponse.json(
@@ -40,10 +38,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use the new @google/genai client for generation.
     const ai = new GoogleGenAI({ apiKey });
     
-    // Build context from product data
     const productContext = `
 Product Information:
 - Name: ${product.name}
@@ -64,7 +60,6 @@ Terms:
 ${JSON.stringify(product.terms, null, 2)}
 `;
 
-    // System instruction (Native support in Gemini 1.5)
     const systemInstruction = `You are a helpful loan advisor assistant. Answer questions about the loan product based on the provided product information below.
 
 ${productContext}
@@ -78,8 +73,6 @@ If the question cannot be answered from the provided information, politely say t
     console.log('[AI Route] Product APR:', product.rateApr);
     console.log('[AI Route] System instruction length:', systemInstruction.length);
 
-    // Build candidate model list. Prefer models returned by the REST ListModels
-    // call (if available). Allow overriding via `GOOGLE_AI_MODEL` env var.
     const envModelRaw = process.env.GOOGLE_AI_MODEL;
     const envModel = typeof envModelRaw === 'string' && envModelRaw.length
       ? envModelRaw.replace(/^models\//i, '')
@@ -88,11 +81,8 @@ If the question cannot be answered from the provided information, politely say t
     const conversationHistory = validatedData.history || [];
     const lastUserMessage = validatedData.message;
 
-    // Filter out system messages from history since systemInstruction already contains product context
     const userAssistantHistory = conversationHistory.filter((msg: any) => msg.role !== 'system');
 
-    // Construct the simple prompt for generateContent and include systemInstruction
-    // (Ideally, use startChat for full history, but this works for single-turn with context)
     const finalPrompt = `
 ${systemInstruction}
 
@@ -102,12 +92,10 @@ ${userAssistantHistory.map((msg: any) => `${msg.role}: ${msg.content}`).join("\n
 User Question: ${lastUserMessage}
 `;
 
-    // Choose model (allow env override); prefer normalized envModel if present
     const modelId = envModel ?? ((process.env.GEMINI_MODEL || 'gemini-2.5-flash').replace(/^models\//i, ''));
 
     try {
       const genResp: any = await ai.models.generateContent({ model: modelId, contents: finalPrompt });
-      // response.text is used by some SDKs; fallback to common fields
       const answer = genResp?.text ?? genResp?.outputText ?? (Array.isArray(genResp?.result) ? genResp.result[0]?.output?.[0]?.content?.text : undefined) ?? '';
 
       return NextResponse.json({ answer, productId: validatedData.productId });
