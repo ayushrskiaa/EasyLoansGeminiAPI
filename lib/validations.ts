@@ -14,7 +14,7 @@ export const aiAskSchema = z.object({
   message: z.string().min(1).max(1000),
   history: z.array(
     z.object({
-      role: z.enum(["user", "assistant"]),
+      role: z.enum(["user", "assistant", "system"]),
       content: z.string(),
     })
   ).optional().default([]),

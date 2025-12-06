@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Send, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,8 +23,13 @@ interface ProductChatProps {
 }
 
 interface Message {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
+}
+
+// Build a concise product context to send as a system message and to the API
+function buildProductContext(product: Product) {
+  return `Product Information:\n- Name: ${product.name}\n- Bank: ${product.bank}\n- Type: ${product.type}\n- APR: ${product.rateApr}%\n- Minimum Income: ₹${product.minIncome}\n- Minimum Credit Score: ${product.minCreditScore}\n- Tenure: ${product.tenureMinMonths}-${product.tenureMaxMonths} months\n- Processing Fee: ${product.processingFeePct}%\n- Prepayment Allowed: ${product.prepaymentAllowed ? "Yes" : "No"}\n- Summary: ${product.summary || "N/A"}`;
 }
 
 export function ProductChat({ product, open, onOpenChange }: ProductChatProps) {
@@ -53,7 +58,8 @@ export function ProductChat({ product, open, onOpenChange }: ProductChatProps) {
         body: JSON.stringify({
           productId: product.id,
           message: input,
-          history: messages,
+          history: newMessages,
+          productContext: buildProductContext(product),
         }),
       });
 
@@ -80,6 +86,16 @@ export function ProductChat({ product, open, onOpenChange }: ProductChatProps) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (open) {
+      // Seed the conversation with a system message containing product context
+      const sys = { role: "system" as const, content: buildProductContext(product) };
+      setMessages([sys]);
+      setInput("");
+      setError(null);
+    }
+  }, [open, product]);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -109,24 +125,32 @@ export function ProductChat({ product, open, onOpenChange }: ProductChatProps) {
             </div>
           )}
 
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                message.role === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
+          {messages.map((message, index) => {
+            if (message.role === "system") {
+              return (
+                <div key={index} className="flex justify-center">
+                  <div className="max-w-[90%] rounded-md px-4 py-2 bg-muted/60 text-xs italic text-muted-foreground">
+                    <pre className="whitespace-pre-wrap">{message.content}</pre>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
               <div
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                  message.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
-                }`}
+                key={index}
+                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                <div
+                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                    message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                  }`}
+                >
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {loading && (
             <div className="flex justify-start">
