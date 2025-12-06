@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Loan Picks Dashboard",
+  title: "EasyLoans - AI-Powered Loan Explorer",
   description: "Explore personalized loan products and get AI-powered assistance",
 };
 

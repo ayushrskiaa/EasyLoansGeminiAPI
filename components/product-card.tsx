@@ -16,17 +16,21 @@ export function ProductCard({ product }: ProductCardProps) {
   const [chatOpen, setChatOpen] = useState(false);
   const badges = getProductBadges(product);
 
+
+
   return (
     <>
       <Card className="h-full flex flex-col">
         <CardHeader>
           <div className="flex justify-between items-start mb-2">
-            <CardTitle className="text-xl">{product.name}</CardTitle>
-            <Badge variant="secondary">{product.bank}</Badge>
+            <div>
+              <CardTitle className="text-xl">{product.name}</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground line-clamp-2">{product.summary || "No description available"}</CardDescription>
+            </div>
+            <div className="flex items-center">
+              <Badge variant="secondary">{product.bank}</Badge>
+            </div>
           </div>
-          <CardDescription className="line-clamp-2">
-            {product.summary || "No description available"}
-          </CardDescription>
         </CardHeader>
         <CardContent className="flex-1">
           <div className="space-y-3">

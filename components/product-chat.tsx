@@ -32,6 +32,67 @@ function buildProductContext(product: Product) {
   return `Product Information:\n- Name: ${product.name}\n- Bank: ${product.bank}\n- Type: ${product.type}\n- APR: ${product.rateApr}%\n- Minimum Income: ₹${product.minIncome}\n- Minimum Credit Score: ${product.minCreditScore}\n- Tenure: ${product.tenureMinMonths}-${product.tenureMaxMonths} months\n- Processing Fee: ${product.processingFeePct}%\n- Prepayment Allowed: ${product.prepaymentAllowed ? "Yes" : "No"}\n- Summary: ${product.summary || "N/A"}`;
 }
 
+
+function renderAssistantContent(text: string) {
+  const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const parseInline = (s: string): React.ReactNode[] => {
+    const parts: React.ReactNode[] = [];
+    const boldRegex = /\*\*(.+?)\*\*/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = boldRegex.exec(s)) !== null) {
+      const before = s.slice(lastIndex, match.index);
+      if (before) parts.push(escape(before));
+      parts.push(<strong key={`b-${lastIndex}`}>{escape(match[1])}</strong>);
+      lastIndex = match.index + match[0].length;
+    }
+    const rest = s.slice(lastIndex);
+    if (rest) parts.push(escape(rest));
+    return parts;
+  };
+
+  const lines = text.split(/\r?\n/);
+  const nodes: React.ReactNode[] = [];
+  let listBuffer: string[] | null = null;
+
+  const flushList = () => {
+    if (listBuffer && listBuffer.length) {
+      nodes.push(
+        <ul key={`ul-${nodes.length}`} className="ml-4 list-disc space-y-1">
+          {listBuffer.map((li, i) => (
+            <li key={`li-${i}`}>{parseInline(li)}</li>
+          ))}
+        </ul>
+      );
+    }
+    listBuffer = null;
+  };
+
+  lines.forEach((rawLine, idx) => {
+    const line = rawLine.trim();
+    const listMatch = line.match(/^[\-*]\s+(.*)$/);
+    if (listMatch) {
+      if (!listBuffer) listBuffer = [];
+      listBuffer.push(listMatch[1]);
+    } else {
+      flushList();
+      if (line === "") {
+        nodes.push(<div key={`br-${idx}`} className="h-2" />);
+      } else {
+        nodes.push(
+          <p key={`p-${idx}`} className="text-sm leading-6">
+            {parseInline(line)}
+          </p>
+        );
+      }
+    }
+  });
+
+  flushList();
+  return nodes;
+}
+
 export function ProductChat({ product, open, onOpenChange }: ProductChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -129,24 +190,30 @@ export function ProductChat({ product, open, onOpenChange }: ProductChatProps) {
             if (message.role === "system") {
               return (
                 <div key={index} className="flex justify-center">
-                  <div className="max-w-[90%] rounded-md px-4 py-2 bg-muted/60 text-xs italic text-muted-foreground">
-                    <pre className="whitespace-pre-wrap">{message.content}</pre>
+                  <div className="max-w-[90%] rounded-xl px-5 py-4 bg-sky-50 border border-sky-100 shadow-sm text-slate-700 font-mono italic text-sm">
+                    <pre className="whitespace-pre-wrap leading-relaxed">{message.content}</pre>
                   </div>
                 </div>
               );
             }
 
+            // user message (right)
+            if (message.role === "user") {
+              return (
+                <div key={index} className="flex justify-end">
+                  <div className="max-w-[80%] rounded-lg px-4 py-2 bg-primary text-primary-foreground">
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  </div>
+                </div>
+              );
+            }
+
+            // assistant (left) with card UI
             return (
-              <div
-                key={index}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                    message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              <div key={index} className="flex justify-start">
+                <div className="max-w-[85%] rounded-xl px-5 py-4 bg-sky-50 border border-sky-100 shadow-sm text-slate-900">
+                  <div className="mb-2 text-xs text-sky-600 font-semibold">Assistant</div>
+                  <div className="prose-sm prose-slate">{renderAssistantContent(message.content)}</div>
                 </div>
               </div>
             );

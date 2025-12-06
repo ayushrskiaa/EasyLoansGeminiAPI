@@ -5,14 +5,13 @@ import { Product } from "@/lib/db/schema";
 import { ProductCard } from "@/components/product-card";
 import { BestMatchCard } from "@/components/best-match-card";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 
 export default function Dashboard() {
   const [topProducts, setTopProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     async function fetchTopProducts() {
@@ -49,19 +48,41 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Loan Picks Dashboard</h1>
-          <div className="flex gap-2">
+      <header className="bg-white border-b">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Image src="/logos/easyloans.svg" alt="EasyLoans" width={140} height={48} priority />
+            <nav className="hidden md:flex gap-4 text-sm text-muted-foreground">
+              <Link href="/products">Products</Link>
+              <Link href="/about">About</Link>
+              <Link href="/docs">Docs</Link>
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-3">
             <Link href="/products">
               <Button variant="outline">All Products</Button>
             </Link>
-            <Button
-              variant="outline"
-              onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-            >
+            <Button variant="ghost" onClick={() => signOut({ callbackUrl: "/auth/signin" })}>
               Sign Out
             </Button>
+          </div>
+        </div>
+        <div className="bg-gradient-to-r from-sky-50 via-white to-white">
+          <div className="container mx-auto px-4 py-10">
+            <div className="max-w-3xl mx-auto text-center">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900">Find the best loan for you</h1>
+              <p className="mt-3 text-lg text-muted-foreground">AI-powered recommendations and clear comparisons across banks.</p>
+
+              <div className="mt-6 flex items-center gap-2 justify-center">
+                <input
+                  aria-label="Search loans"
+                  placeholder="Search by bank, product or rate (e.g. 'personal loan IDFC')"
+                  className="w-full max-w-xl rounded-lg border p-3 shadow-sm"
+                />
+                <Button>Search</Button>
+              </div>
+            </div>
           </div>
         </div>
       </header>

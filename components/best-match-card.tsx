@@ -19,21 +19,21 @@ export function BestMatchCard({ product }: BestMatchCardProps) {
 
   return (
     <>
-      <Card className="border-2 border-primary shadow-lg">
-        <CardHeader className="bg-primary/5">
+      <Card className="border-2 border-primary shadow-xl">
+        <CardHeader className="bg-gradient-to-r from-white to-sky-50">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="h-5 w-5 text-primary" />
             <Badge variant="default" className="text-sm">Best Match</Badge>
           </div>
           <div className="flex justify-between items-start">
-            <CardTitle className="text-2xl">{product.name}</CardTitle>
-            <Badge variant="secondary" className="text-base px-3 py-1">
-              {product.bank}
-            </Badge>
+            <div>
+              <CardTitle className="text-2xl">{product.name}</CardTitle>
+              <CardDescription className="text-sm text-muted-foreground mt-1">{product.summary || "No description available"}</CardDescription>
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="text-base px-3 py-1">{product.bank}</Badge>
+            </div>
           </div>
-          <CardDescription className="text-base mt-2">
-            {product.summary || "No description available"}
-          </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
