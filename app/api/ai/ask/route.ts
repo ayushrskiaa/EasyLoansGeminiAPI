@@ -65,10 +65,18 @@ ${JSON.stringify(product.terms, null, 2)}
 `;
 
     // System instruction (Native support in Gemini 1.5)
-    const systemInstruction = `You are a helpful loan advisor assistant. Answer questions about the loan product based ONLY on the provided Context. 
-    Context: ${productContext}
-    
-    If the question cannot be answered from the provided information, politely say that you don't have that information. Be concise.`;
+    const systemInstruction = `You are a helpful loan advisor assistant. Answer questions about the loan product based on the provided product information below.
+
+${productContext}
+
+You MUST use the APR value provided above when calculating EMI or monthly payments. Use the standard EMI formula:
+EMI = P * r * (1 + r)^n / ((1 + r)^n - 1)
+where P = principal, r = monthly interest rate (APR/12/100), n = tenure in months.
+
+If the question cannot be answered from the provided information, politely say that you don't have that information. Be concise and helpful.`;
+
+    console.log('[AI Route] Product APR:', product.rateApr);
+    console.log('[AI Route] System instruction length:', systemInstruction.length);
 
     // Build candidate model list. Prefer models returned by the REST ListModels
     // call (if available). Allow overriding via `GOOGLE_AI_MODEL` env var.
@@ -77,27 +85,25 @@ ${JSON.stringify(product.terms, null, 2)}
       ? envModelRaw.replace(/^models\//i, '')
       : undefined;
 
-    // Candidate models were used in the previous implementation when
-    // iterating through available SDK models. Now we use a single
-    // `modelId` (see below) with the `@google/genai` client, so no
-    // candidate list or trial loop is necessary.
-
-    // Build chat history for the prompt
-    // Note: We don't need to inject system prompt here as we use systemInstruction below
     const conversationHistory = validatedData.history || [];
     const lastUserMessage = validatedData.message;
 
-    // Construct the simple prompt for generateContent
+    // Filter out system messages from history since systemInstruction already contains product context
+    const userAssistantHistory = conversationHistory.filter((msg: any) => msg.role !== 'system');
+
+    // Construct the simple prompt for generateContent and include systemInstruction
     // (Ideally, use startChat for full history, but this works for single-turn with context)
     const finalPrompt = `
+${systemInstruction}
+
 Previous Conversation:
-${conversationHistory.map((msg: any) => `${msg.role}: ${msg.content}`).join("\n")}
+${userAssistantHistory.map((msg: any) => `${msg.role}: ${msg.content}`).join("\n")}
 
 User Question: ${lastUserMessage}
 `;
 
-    // Choose model (allow env override); default to gemini-2.5-flash
-    const modelId = (process.env.GOOGLE_AI_MODEL || process.env.GEMINI_MODEL || 'gemini-2.5-flash').replace(/^models\//i, '');
+    // Choose model (allow env override); prefer normalized envModel if present
+    const modelId = envModel ?? ((process.env.GEMINI_MODEL || 'gemini-2.5-flash').replace(/^models\//i, ''));
 
     try {
       const genResp: any = await ai.models.generateContent({ model: modelId, contents: finalPrompt });

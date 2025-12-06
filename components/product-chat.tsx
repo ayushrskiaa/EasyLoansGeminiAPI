@@ -187,14 +187,9 @@ export function ProductChat({ product, open, onOpenChange }: ProductChatProps) {
           )}
 
           {messages.map((message, index) => {
+            // Skip system messages - they're internal context only
             if (message.role === "system") {
-              return (
-                <div key={index} className="flex justify-center">
-                  <div className="max-w-[90%] rounded-xl px-5 py-4 bg-sky-50 border border-sky-100 shadow-sm text-slate-700 font-mono italic text-sm">
-                    <pre className="whitespace-pre-wrap leading-relaxed">{message.content}</pre>
-                  </div>
-                </div>
-              );
+              return null;
             }
 
             // user message (right)
